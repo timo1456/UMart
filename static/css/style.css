@@ -1,9 +1,28 @@
-/* Global styles for UMart */
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-}
+* { box-sizing: border-box; }
+:root { font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #18221f; background: #f5f7f5; }
+body { margin: 0; min-height: 100vh; }
+a { color: #16845d; text-decoration: none; }
+.auth-page { min-height: 100vh; display: grid; place-items: center; padding: 32px 18px; }
+.auth-card { width: min(100%, 440px); padding: 42px; background: #fff; border: 1px solid #e7ece8; border-radius: 18px; box-shadow: 0 18px 55px rgba(25, 55, 42, .07); }
+.brand { display: inline-block; margin-bottom: 34px; color: #17231e; font-size: 27px; font-weight: 800; letter-spacing: -1.4px; }
+.brand span { color: #16845d; }
+.eyebrow { margin: 0 0 10px; color: #16845d; font-size: 11px; font-weight: 800; letter-spacing: 1.7px; }
+h1 { margin: 0; font-size: clamp(27px, 5vw, 34px); letter-spacing: -1.1px; }
+.subtitle { margin: 10px 0 28px; color: #78827c; line-height: 1.6; }
+form label { display: block; margin: 18px 0 8px; color: #34423a; font-size: 13px; font-weight: 650; }
+form input { width: 100%; height: 48px; padding: 0 14px; border: 1px solid #dce4de; border-radius: 9px; outline: none; background: #fff; color: #18221f; font: inherit; }
+form input:focus { border-color: #16845d; box-shadow: 0 0 0 3px rgba(22, 132, 93, .1); }
+.primary-button { width: 100%; height: 49px; margin-top: 25px; border: 0; border-radius: 9px; background: #16845d; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; }
+.primary-button:hover { background: #116b4b; }
+.auth-switch { margin: 24px 0 0; color: #78827c; text-align: center; font-size: 13px; }
+.auth-switch a { font-weight: 700; }
+.alert { margin: 16px 0; padding: 11px 13px; border-radius: 8px; font-size: 13px; }
+.alert-error { background: #fff0ef; color: #a63830; }
+.alert-success { background: #eaf7ef; color: #17683e; }
+.alert-info { background: #eef5ff; color: #285b91; }
+.dashboard-page { width: min(100% - 40px, 1000px); margin: 0 auto; }
+.dashboard-header { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; border-bottom: 1px solid #e3eae5; }
+.dashboard-header .brand { margin: 0; }
+.logout-button { padding: 10px 17px; border: 1px solid #dce4de; border-radius: 8px; background: #fff; color: #34423a; font-weight: 650; cursor: pointer; }
+.welcome-panel { margin-top: 70px; padding: 48px; border: 1px solid #e5ece7; border-radius: 16px; background: #fff; }
+@media (max-width: 520px) { .auth-card { padding: 30px 23px; } .welcome-panel { padding: 30px 24px; } }
