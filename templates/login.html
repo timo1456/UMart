@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Log in | UMart{% endblock %}
+{% block content %}
+<main class="auth-page">
+    <section class="auth-card">
+        <a class="brand" href="{{ url_for('home') }}">UMart<span>.</span></a>
+        <p class="eyebrow">WELCOME BACK</p>
+        <h1>Log in to your account</h1>
+        <p class="subtitle">Continue to your UMart experience.</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('login') }}">
+            <label for="identity">Email or username</label>
+            <input id="identity" name="identity" type="text" autocomplete="username" placeholder="Enter your email or username" required>
+
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required>
+
+            <button class="primary-button" type="submit">Log in</button>
+        </form>
+        <p class="auth-switch">Don't have an account? <a href="{{ url_for('register') }}">Create one</a></p>
+    </section>
+</main>
+{% endblock %}
