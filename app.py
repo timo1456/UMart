@@ -1,9 +1,11 @@
 import os
-import sqlite3
 from functools import wraps
 from pathlib import Path
 
 from flask import Flask, flash, redirect, render_template, request, session, url_for
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import or_
+from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -11,18 +13,23 @@ DATABASE = BASE_DIR / "store.db"
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-only-change-this-secret-key")
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DATABASE.as_posix()}"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db = SQLAlchemy(app)
 
 
-def get_db_connection():
-    connection = sqlite3.connect(DATABASE)
-    connection.row_factory = sqlite3.Row
-    return connection
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.Text(collation="NOCASE"), nullable=False, unique=True)
+    email = db.Column(db.Text(collation="NOCASE"), nullable=False, unique=True)
+    password_hash = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, server_default=db.func.current_timestamp())
 
 
 def init_db():
-    with get_db_connection() as connection:
-        connection.execute(
-                )
+    with app.app_context():
+        db.create_all()
 
 
 def login_required(view):
@@ -59,19 +66,21 @@ def register():
         elif password != confirm_password:
             flash("The passwords do not match.", "error")
         else:
+            user = User(
+                username=username,
+                email=email,
+                password_hash=generate_password_hash(password),
+            )
             try:
-                with get_db_connection() as connection:
-                    cursor = connection.execute(
-                        "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)",
-                        (username, email, generate_password_hash(password)),
-                    )
-                    user_id = cursor.lastrowid
+                db.session.add(user)
+                db.session.commit()
                 session.clear()
-                session["user_id"] = user_id
-                session["username"] = username
+                session["user_id"] = user.id
+                session["username"] = user.username
                 flash("Your UMart account has been created.", "success")
                 return redirect(url_for("dashboard"))
-            except sqlite3.IntegrityError:
+            except IntegrityError:
+                db.session.rollback()
                 flash("That username or email is already registered.", "error")
 
     return render_template("register.html")
@@ -83,18 +92,16 @@ def login():
         identity = request.form.get("identity", "").strip()
         password = request.form.get("password", "")
 
-        with get_db_connection() as connection:
-            user = connection.execute(
-                "SELECT * FROM users WHERE email = ? OR username = ?",
-                (identity, identity),
-            ).fetchone()
+        user = User.query.filter(
+            or_(User.email == identity, User.username == identity)
+        ).first()
 
-        if user is None or not check_password_hash(user["password_hash"], password):
+        if user is None or not check_password_hash(user.password_hash, password):
             flash("Invalid username/email or password.", "error")
         else:
             session.clear()
-            session["user_id"] = user["id"]
-            session["username"] = user["username"]
+            session["user_id"] = user.id
+            session["username"] = user.username
             return redirect(url_for("dashboard"))
 
     return render_template("login.html")
