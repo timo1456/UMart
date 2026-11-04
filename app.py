@@ -21,16 +21,7 @@ def home():
     return render_template("index.html")
 
 
-@app.route("/health")
-def health():
-    """Simple check that the application can access its database."""
-    try:
-        with get_db_connection() as connection:
-            connection.execute("SELECT 1")
-        return {"status": "ok", "database": "connected"}, 200
-    except sqlite3.Error:
-        app.logger.exception("Database connection failed")
-        return {"status": "error", "database": "unavailable"}, 500
+
 
 
 if __name__ == "__main__":
