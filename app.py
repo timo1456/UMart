@@ -3,10 +3,11 @@ from functools import wraps
 from pathlib import Path
 
 from flask import Flask, flash, redirect, render_template, request, session, url_for
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
+
+from models import User, db
 
 BASE_DIR = Path(__file__).resolve().parent
 DATABASE = BASE_DIR / "store.db"
@@ -16,15 +17,7 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-only-change-this-se
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DATABASE.as_posix()}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-db = SQLAlchemy(app)
-
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.Text(collation="NOCASE"), nullable=False, unique=True)
-    email = db.Column(db.Text(collation="NOCASE"), nullable=False, unique=True)
-    password_hash = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, server_default=db.func.current_timestamp())
+db.init_app(app)
 
 
 def init_db():
