@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | UMart{% endblock %}
+{% block content %}
+<main class="dashboard-page">
+    <header class="dashboard-header">
+        <a class="brand" href="{{ url_for('dashboard') }}">UMart<span>.</span></a>
+        <form method="POST" action="{{ url_for('logout') }}">
+            <button class="logout-button" type="submit">Log out</button>
+        </form>
+    </header>
+    <section class="welcome-panel">
+        <p class="eyebrow">YOUR UMART ACCOUNT</p>
+        <h1>Welcome, {{ username }}.</h1>
+        <p class="subtitle">You are successfully logged in. Your account is ready.</p>
+    </section>
+</main>
+{% endblock %}
