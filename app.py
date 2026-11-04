@@ -14,26 +14,15 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-only-change-this-se
 
 
 def get_db_connection():
-    """Open a connection to the project's SQLite database."""
     connection = sqlite3.connect(DATABASE)
     connection.row_factory = sqlite3.Row
     return connection
 
 
 def init_db():
-    """Create the database and users table if they do not exist."""
     with get_db_connection() as connection:
         connection.execute(
-            """
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT NOT NULL COLLATE NOCASE UNIQUE,
-                email TEXT NOT NULL COLLATE NOCASE UNIQUE,
-                password_hash TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-            """
-        )
+                )
 
 
 def login_required(view):
