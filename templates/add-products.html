@@ -3,15 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Products</title>
+    <title>Add Products | UMart</title>
 </head>
 <body>
-    <form method="POST" enctype="multipart/form-data">
-            <input type="text" name="pr-name" id="" placeholder="Product Mame">
-            <input type="number" name="pr-price" id="" placeholder="price">
-            <input type="file" name="pr-img" id="" accept="image/*">
-            <input type="text" name="pr-category" id="">
-            <button>Add Product</button>
-     </form>
+    <h1>Add a product</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <p class="flash {{ category }}" role="alert">{{ message }}</p>
+        {% endfor %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('add_products') }}" enctype="multipart/form-data">
+        <label for="pr-name">Product name</label>
+        <input type="text" name="pr-name" id="pr-name" maxlength="100" required>
+
+        <label for="pr-price">Price (₦)</label>
+        <input type="number" name="pr-price" id="pr-price" min="1" step="1" required>
+
+        <label for="pr-img">Product image</label>
+        <input type="file" name="pr-img" id="pr-img" accept="image/jpeg,image/png,image/webp,image/gif">
+
+        <label for="pr-category">Category</label>
+        <input type="text" name="pr-category" id="pr-category" maxlength="100" required>
+
+        <button type="submit">Add Product</button>
+    </form>
+
+    <p><a href="{{ url_for('dashboard') }}">Back to dashboard</a></p>
 </body>
 </html>
