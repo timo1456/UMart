@@ -7,7 +7,7 @@ from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from models import User, db
+from models import User, Stock, db
 
 BASE_DIR = Path(__file__).resolve().parent
 DATABASE = BASE_DIR / "store.db"
@@ -142,6 +142,32 @@ def logout():
     flash("You have been logged out.", "success")
     return redirect(url_for("login"))
 
+@app.route("/add_products_page")
+@login_required
+def add_products_page():
+    return render_template("add-products.html")
+
+@app.route("/add-products", methods=["GET", "POST"])
+def add_products():
+    if request.method == "POST":
+        pr_name = request.form.get("pr-name")
+        pr_img = request.files.get("pr-img")
+        pr_price = request.form.get("pr-price")
+        pr_category = request.form.get("pr-category")
+
+        stock = Stock(
+            pr_name=pr_name,
+            pr_price=pr_price,
+            pr_category=pr_category,
+            pr_img=pr_img.read() if pr_img else None
+        )
+
+        db.session.add(stock)
+        db.session.commit()
+
+        return render_template("add-products.html")
+
+    return render_template("add-products.html")
 
 init_db()
 
