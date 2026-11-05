@@ -47,10 +47,11 @@ def register():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         email = request.form.get("email", "").strip().lower()
+        role = request.form.get("role", "").strip()
         password = request.form.get("password", "")
         confirm_password = request.form.get("confirm_password", "")
 
-        if not username or not email or not password:
+        if not username or not email or not password or not role:
             flash("Please complete all fields.", "error")
         elif len(username) < 3:
             flash("Username must be at least 3 characters long.", "error")
@@ -62,6 +63,7 @@ def register():
             user = User(
                 username=username,
                 email=email,
+                role=role,
                 password_hash=generate_password_hash(password),
             )
             try:
@@ -70,6 +72,7 @@ def register():
                 session.clear()
                 session["user_id"] = user.id
                 session["username"] = user.username
+                session["role"]= user.role
                 flash("Your UMart account has been created.", "success")
                 return redirect(url_for("dashboard"))
             except IntegrityError:
@@ -86,7 +89,7 @@ def login():
         password = request.form.get("password", "")
 
         user = User.query.filter(
-            or_(User.email == identity, User.username == identity)
+            or_(User.email == identity, User.username == identity, User.role == identity)
         ).first()
 
         if user is None or not check_password_hash(user.password_hash, password):
@@ -95,6 +98,7 @@ def login():
             session.clear()
             session["user_id"] = user.id
             session["username"] = user.username
+            session["role"] = user.role
             return redirect(url_for("dashboard"))
 
     return render_template("login.html")
@@ -103,8 +107,21 @@ def login():
 @app.route("/dashboard")
 @login_required
 def dashboard():
-    return render_template("dashboard.html", username=session.get("username"))
+    if "user" not in session:
+        return redirect("/login")
 
+    if session["role"] == "buyer":
+        return render_template(
+            "buyer-dashboard.html",
+            user=session["user"]
+        )
+    
+    if session["role"] == "seller":
+            return render_template(
+                "seller-dashboard.html",
+                user=session["user"]
+            )
+    
 
 @app.route("/logout", methods=["POST"])
 @login_required
