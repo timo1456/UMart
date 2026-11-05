@@ -19,6 +19,8 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
 
+ALLOWED_ROLES = {"buyer", "seller"}
+
 
 def init_db():
     with app.app_context():
@@ -28,7 +30,9 @@ def init_db():
 def login_required(view):
     @wraps(view)
     def wrapped_view(**kwargs):
-        if "user_id" not in session:
+        user_id = session.get("user_id")
+        if user_id is None or db.session.get(User, user_id) is None:
+            session.clear()
             flash("Please log in to continue.", "info")
             return redirect(url_for("login"))
         return view(**kwargs)
@@ -47,7 +51,7 @@ def register():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         email = request.form.get("email", "").strip().lower()
-        role = request.form.get("role", "").strip()
+        role = request.form.get("role", "").strip().lower()
         password = request.form.get("password", "")
         confirm_password = request.form.get("confirm_password", "")
 
@@ -55,6 +59,8 @@ def register():
             flash("Please complete all fields.", "error")
         elif len(username) < 3:
             flash("Username must be at least 3 characters long.", "error")
+        elif role not in ALLOWED_ROLES:
+            flash("Please select a valid account role.", "error")
         elif len(password) < 8:
             flash("Password must be at least 8 characters long.", "error")
         elif password != confirm_password:
@@ -71,8 +77,6 @@ def register():
                 db.session.commit()
                 session.clear()
                 session["user_id"] = user.id
-                session["username"] = user.username
-                session["role"]= user.role
                 flash("Your UMart account has been created.", "success")
                 return redirect(url_for("dashboard"))
             except IntegrityError:
@@ -89,7 +93,7 @@ def login():
         password = request.form.get("password", "")
 
         user = User.query.filter(
-            or_(User.email == identity, User.username == identity, User.role == identity)
+            or_(User.email == identity, User.username == identity)
         ).first()
 
         if user is None or not check_password_hash(user.password_hash, password):
@@ -97,8 +101,6 @@ def login():
         else:
             session.clear()
             session["user_id"] = user.id
-            session["username"] = user.username
-            session["role"] = user.role
             return redirect(url_for("dashboard"))
 
     return render_template("login.html")
@@ -107,21 +109,31 @@ def login():
 @app.route("/dashboard")
 @login_required
 def dashboard():
-    if "user" not in session:
-        return redirect("/login")
+    user = db.session.get(User, session["user_id"])
 
-    if session["role"] == "buyer":
+    if user is None:
+        session.clear()
+        flash("Please log in to continue.", "info")
+        return redirect(url_for("login"))
+
+    if user.role == "buyer":
         return render_template(
             "buyer-dashboard.html",
-            user=session["user"]
+            username=user.username,
+            search=request.args.get("search", "").strip(),
+            products=[],
         )
-    
-    if session["role"] == "seller":
-            return render_template(
-                "seller-dashboard.html",
-                user=session["user"]
-            )
-    
+
+    if user.role == "seller":
+        return render_template(
+            "seller-dashboard.html",
+            username=user.username,
+        )
+
+    session.clear()
+    flash("Your account has an invalid role. Please contact support.", "error")
+    return redirect(url_for("login"))
+
 
 @app.route("/logout", methods=["POST"])
 @login_required
